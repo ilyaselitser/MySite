@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  nameBg      String
+  nameRu      String
+  nameEn      String
+  image       String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
+}
+
+model Product {
+  id             String      @id @default(cuid())
+  slug           String      @unique
+  nameBg         String
+  nameRu         String
+  nameEn         String
+  descriptionBg  String
+  descriptionRu  String
+  descriptionEn  String
+  priceBgn       Float
+  priceEur       Float
+  images         String      // JSON array of image URLs
+  ageMin         Int         // minimum age in years
+  ageMax         Int         // maximum age in years
+  stock          Int         @default(0)
+  featured       Boolean     @default(false)
+  category       Category    @relation(fields: [categoryId], references: [id])
+  categoryId     String
+  orderItems     OrderItem[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  status          String      @default("pending") // pending, paid, shipped, delivered, cancelled
+  paymentMethod   String      // stripe, bank_transfer, cod_econt, cod_speedy
+  paymentStatus   String      @default("unpaid") // unpaid, paid
+  stripeSessionId String?
+  currency        String      @default("BGN")
+  subtotal        Float
+  shippingCost    Float       @default(0)
+  total           Float
+  // Customer info
+  firstName       String
+  lastName        String
+  email           String
+  phone           String
+  // Shipping address
+  address         String
+  city            String
+  postalCode      String
+  country         String      @default("Bulgaria")
+  notes           String?
+  user            User?       @relation(fields: [userId], references: [id])
+  userId          String?
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  order      Order    @relation(fields: [orderId], references: [id])
+  orderId    String
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  String
+  quantity   Int
+  priceBgn   Float
+  priceEur   Float
+  nameBg     String
+  nameEn     String
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  nameBg    String
+  nameRu    String
+  nameEn    String
+  textBg    String
+  textRu    String
+  textEn    String
+  rating    Int      @default(5)
+  avatar    String?
+  createdAt DateTime @default(now())
+}
